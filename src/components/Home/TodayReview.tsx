@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styles from './TodayReview.module.css';
+import { useSettings } from '@/lib/store';
 
 interface CategorySummary {
   category: string;
@@ -32,9 +33,11 @@ export default function TodayReview() {
   const [question, setQuestion] = useState<string | null>(null);
   const [reflectionId, setReflectionId] = useState<string | null>(null);
   const [answer, setAnswer] = useState('');
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [statusKey, setStatusKey] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+  const { t, settings } = useSettings();
 
   useEffect(() => {
     fetchSummary();
@@ -42,12 +45,12 @@ export default function TodayReview() {
 
   const fetchSummary = async () => {
     setLoading(true);
-    setError(null);
+    setErrorKey(null);
     try {
       const res = await fetch('/api/history');
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error || '기록을 불러오지 못했어요.');
+        throw new Error(payload.error || t('today_history_fetch_error'));
       }
       setData(payload);
       const reflection = payload.reflection;
@@ -55,42 +58,44 @@ export default function TodayReview() {
         setReflectionId(reflection.id);
         setQuestion(reflection.question);
         setAnswer(reflection.answer || '');
-        setStatus(reflection.answer ? '오늘의 회고 답변이 저장되어 있어요.' : null);
+        setStatusKey(reflection.answer ? 'today_status_answered' : null);
       } else {
         setReflectionId(null);
         setQuestion(null);
         setAnswer('');
-        setStatus(null);
+        setStatusKey(null);
       }
     } catch (err) {
       console.error('History fetch failed', err);
-      const message = err instanceof Error ? err.message : '기록을 불러오지 못했어요.';
-      setError(message);
+      setErrorKey('today_history_fetch_error');
     } finally {
       setLoading(false);
     }
   };
 
-  const startReflection = async () => {
+  const startReflection = async (forceNew = false) => {
     if (!data || data.entries.length < MIN_ENTRIES_FOR_UI) return;
     setQuestionLoading(true);
-    setError(null);
-    setStatus(null);
+    setErrorKey(null);
+    setStatusKey(null);
     try {
-      const res = await fetch('/api/history/reflection', { method: 'POST' });
+      const res = await fetch('/api/history/reflection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: settings.language, forceNew }),
+      });
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error || '질문을 만들지 못했어요.');
+        throw new Error(payload.error || t('today_question_error'));
       }
       setQuestion(payload.reflection.question);
       setReflectionId(payload.reflection.id);
       setAnswer('');
       setIsPanelOpen(true);
-      setStatus('질문이 준비됐어요. 솔직하게 답해볼까요?');
+      setStatusKey('today_status_prompt_ready');
     } catch (err) {
       console.error('Reflection start failed', err);
-      const message = err instanceof Error ? err.message : '질문을 만들지 못했어요.';
-      setError(message);
+      setErrorKey('today_question_error');
     } finally {
       setQuestionLoading(false);
     }
@@ -98,10 +103,10 @@ export default function TodayReview() {
 
   const submitAnswer = async () => {
     if (!reflectionId || !answer.trim()) {
-      setError('한 줄이라도 당신의 생각을 남겨주세요.');
+      setErrorKey('today_answer_required');
       return;
     }
-    setError(null);
+    setErrorKey(null);
     try {
       const res = await fetch('/api/history/reflection', {
         method: 'PATCH',
@@ -110,14 +115,13 @@ export default function TodayReview() {
       });
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error || '답변을 저장하지 못했어요.');
+        throw new Error(payload.error || t('today_answer_error'));
       }
-      setStatus('오늘의 회고가 보관함에 저장됐어요.');
+      setStatusKey('today_status_saved');
       await fetchSummary();
     } catch (err) {
       console.error('Reflection submit failed', err);
-      const message = err instanceof Error ? err.message : '답변을 저장하지 못했어요.';
-      setError(message);
+      setErrorKey('today_answer_error');
     }
   };
 
@@ -131,8 +135,8 @@ export default function TodayReview() {
   }
 
   const inlineHint = question
-    ? '작성한 답을 이어서 볼까요?'
-    : '한 줄 회고 남기기';
+    ? t('today_inline_continue')
+    : t('today_inline_start');
 
   const handleInlineClick = () => {
     if (!hasEnoughEntries || loading) return;
@@ -145,17 +149,17 @@ export default function TodayReview() {
 
   return (
     <section className={styles.reviewCard}>
-      <button
-        className={styles.inlineButton}
-        onClick={handleInlineClick}
-        disabled={!hasEnoughEntries || loading || questionLoading}
-      >
-        <div className={styles.inlineTexts}>
-          <span className={styles.inlineTitle}>오늘 인사이트 정리하기</span>
-          <span className={styles.inlineHint}>{inlineHint}</span>
-        </div>
-        <span className={styles.inlineArrow}>→</span>
-      </button>
+        <button
+          className={styles.inlineButton}
+          onClick={handleInlineClick}
+          disabled={!hasEnoughEntries || loading || questionLoading}
+        >
+          <div className={styles.inlineTexts}>
+            <span className={styles.inlineTitle}>{t('today_inline_title')}</span>
+            <span className={styles.inlineHint}>{inlineHint}</span>
+          </div>
+          <span className={styles.inlineArrow}>→</span>
+        </button>
 
       {categories.length > 0 && (
         <div className={styles.categoryList}>
@@ -167,20 +171,30 @@ export default function TodayReview() {
         </div>
       )}
 
-      {status && <p className={styles.status}>{status}</p>}
-      {error && <p className={styles.error}>{error}</p>}
+      {statusKey && <p className={styles.status}>{t(statusKey)}</p>}
+      {errorKey && <p className={styles.error}>{t(errorKey)}</p>}
 
       {isPanelOpen && hasEnoughEntries && (
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
-            <p className={styles.panelLabel}>오늘 본 영상</p>
-            <button
-              className={styles.refreshBtn}
-              onClick={fetchSummary}
-              disabled={loading}
-            >
-              새로고침
-            </button>
+            <p className={styles.panelLabel}>{t('today_watched_label')}</p>
+            <div className={styles.refreshGroup}>
+              <button
+                className={styles.refreshBtn}
+                onClick={() => startReflection(true)}
+                disabled={questionLoading || loading}
+              >
+                {t('today_generate_question')}
+              </button>
+              <button
+                className={styles.refreshIconBtn}
+                onClick={fetchSummary}
+                disabled={loading}
+                aria-label={t('today_refresh_summary')}
+              >
+                ↻
+              </button>
+            </div>
           </div>
           <ul className={styles.titleList}>
             {titles.map((title, idx) => (
@@ -190,21 +204,21 @@ export default function TodayReview() {
 
           {question && (
             <div className={styles.questionBox}>
-              <p className={styles.panelLabel}>AI가 건네는 질문</p>
+              <p className={styles.panelLabel}>{t('today_question_label')}</p>
               <blockquote>{question}</blockquote>
               <textarea
-                placeholder="어떤 생각이 들었나요?"
+                placeholder={t('today_answer_placeholder')}
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 disabled={!!data?.reflection?.answer}
               />
               {!data?.reflection?.answer && (
                 <button className={styles.primaryBtn} onClick={submitAnswer}>
-                  보관함에 저장
+                  {t('today_save_to_library')}
                 </button>
               )}
               {data?.reflection?.answer && (
-                <p className={styles.helperText}>오늘 답변을 이미 저장했어요.</p>
+                <p className={styles.helperText}>{t('today_already_answered')}</p>
               )}
             </div>
           )}

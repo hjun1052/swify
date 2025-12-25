@@ -113,6 +113,12 @@ const FEEDBACK_TOOL = {
 } as const;
 
 const QUIZ_MODEL = "gpt-4o-mini";
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: "English",
+  ko: "Korean",
+  es: "Spanish",
+  ja: "Japanese",
+};
 
 function summarizeVideo(video: VideoSummary) {
   const slideText = video.slides
@@ -155,8 +161,9 @@ function coerceQuizQuestions(questions: QuizQuestion[]): QuizQuestion[] {
   return sanitized;
 }
 
-async function requestQuiz(video: VideoSummary): Promise<QuizQuestion[]> {
+async function requestQuiz(video: VideoSummary, language: string): Promise<QuizQuestion[]> {
   const summary = summarizeVideo(video);
+  const targetLanguage = LANGUAGE_LABELS[language] || "English";
   const completion = await openai.chat.completions.create({
     model: QUIZ_MODEL,
     temperature: 0.7,
@@ -164,7 +171,7 @@ async function requestQuiz(video: VideoSummary): Promise<QuizQuestion[]> {
       {
         role: "system",
         content:
-          "You design quick reflection quizzes for short-form explainers. Each question should demand a judgment call or perspective shift. There are no correct answers.",
+          `You design quick reflection quizzes for short-form explainers. Each question should demand a judgment call or perspective shift. There are no correct answers. Respond entirely in ${targetLanguage}.`,
       },
       {
         role: "user",
@@ -190,9 +197,11 @@ async function requestEvaluation(params: {
   video: VideoSummary;
   quiz: QuizQuestion[];
   answers: QuizAnswer[];
+  language: string;
 }): Promise<QuizEvaluation> {
-  const { video, quiz, answers } = params;
+  const { video, quiz, answers, language } = params;
   const summary = summarizeVideo(video);
+  const targetLanguage = LANGUAGE_LABELS[language] || "English";
   const quizText = quiz
     .map((question) => {
       const base = `Question (${question.type}): ${question.prompt}`;
@@ -222,7 +231,7 @@ async function requestEvaluation(params: {
       {
         role: "system",
         content:
-          "You are a reflective learning coach. Respond with encouragement, highlight trade-offs, and never mark answers as correct or incorrect.",
+          `You are a reflective learning coach. Respond with encouragement, highlight trade-offs, and never mark answers as correct or incorrect. Write every response in ${targetLanguage}.`,
       },
       {
         role: "user",
@@ -254,7 +263,8 @@ Provide feedback referencing their reasoning.`,
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { video, answers, quiz } = body || {};
+    const { video, answers, quiz, language } = body || {};
+    const requestedLanguage = typeof language === "string" ? language : "en";
 
     if (
       !video ||
@@ -279,7 +289,7 @@ export async function POST(request: Request) {
     };
 
     if (!answers) {
-      const questions = await requestQuiz(condensedVideo);
+      const questions = await requestQuiz(condensedVideo, requestedLanguage);
       return NextResponse.json({ quiz: questions });
     }
 
@@ -294,6 +304,7 @@ export async function POST(request: Request) {
       video: condensedVideo,
       quiz,
       answers,
+      language: requestedLanguage,
     });
 
     return NextResponse.json({ evaluation });

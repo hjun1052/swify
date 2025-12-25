@@ -19,7 +19,7 @@ function FeedContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q');
 
-  const { settings, loaded } = useSettings();
+  const { settings, loaded, t } = useSettings();
 
   const [videos, setVideos] = useState<VideoShort[]>([]);
   const [loading, setLoading] = useState(true);
@@ -163,7 +163,7 @@ function FeedContent() {
         <button
           className={styles.backButton}
           onClick={() => router.push('/')}
-          aria-label="뒤로가기"
+          aria-label={t('back')}
         >
           <ArrowLeft size={20} />
         </button>

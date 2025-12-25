@@ -5,6 +5,12 @@ import { getTodayRange } from "@/lib/date";
 import { openai } from "@/lib/openai";
 
 const REFLECTION_MODEL = "gpt-4o-mini";
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: "English",
+  ko: "Korean",
+  es: "Spanish",
+  ja: "Japanese",
+};
 
 function formatSummary(entries: { title: string; category: string }[]) {
   const categoryTotals = entries.reduce<Record<string, number>>((acc, entry) => {
@@ -45,8 +51,13 @@ async function fetchTodayEntries(userId: string) {
   });
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
+    const body = await req.json().catch(() => ({}));
+    const languageParam = typeof body?.language === "string" ? body.language : "en";
+    const forceNew = Boolean(body?.forceNew);
+    const targetLanguage = LANGUAGE_LABELS[languageParam] || "English";
+
     const user = await getDefaultUser();
     const entries = await fetchTodayEntries(user.id);
 
@@ -69,7 +80,7 @@ export async function POST() {
       orderBy: { createdAt: "desc" },
     });
 
-    if (existing && !existing.answer) {
+    if (existing && !forceNew) {
       return NextResponse.json({
         reflection: {
           id: existing.id,
@@ -87,7 +98,7 @@ export async function POST() {
         {
           role: "system",
           content:
-            "You are a mindful coach. Given a summary of videos someone watched today, craft one open-ended question that invites them to synthesize what it means for them. No bullet points, just one concise question.",
+            `You are a mindful coach. Given a summary of videos someone watched today, craft one open-ended question that invites them to synthesize what it means for them. No bullet points, just one concise question. Respond entirely in ${targetLanguage}.`,
         },
         {
           role: "user",

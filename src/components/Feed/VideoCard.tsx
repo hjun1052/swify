@@ -6,6 +6,7 @@ import { VideoShort } from '@/app/api/generate/route';
 import styles from './VideoCard.module.css';
 import CommentDrawer from './CommentDrawer';
 import { QuizEvaluation, QuizQuestion } from '@/types/quiz';
+import { useSettings } from '@/lib/store';
 
 interface VideoCardProps {
   video: VideoShort;
@@ -31,6 +32,7 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
   const [quizSubmitting, setQuizSubmitting] = useState(false);
   const [quizResponses, setQuizResponses] = useState<Record<string, { value: string; reasoning?: string }>>({});
   const hasLoggedWatch = useRef(false);
+  const { t, settings } = useSettings();
 
   // Sync timeout reset with index changes (prevents cascading render warning)
   if (currentSlideIndex !== prevIndex) {
@@ -195,17 +197,17 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
       const res = await fetch('/api/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video: buildQuizPayload() }),
+        body: JSON.stringify({ video: buildQuizPayload(), language: settings.language }),
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || '퀴즈를 불러오지 못했어요');
+        throw new Error(data.error || t('quiz_fetch_error'));
       }
       setQuizData(data.quiz);
     } catch (error) {
       console.error('Quiz fetch failed', error);
       const message =
-        error instanceof Error ? error.message : '퀴즈를 불러오지 못했어요';
+        error instanceof Error ? error.message : t('quiz_fetch_error');
       setQuizError(message);
     } finally {
       setQuizLoading(false);
@@ -257,7 +259,7 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
   const submitQuiz = async () => {
     if (!quizData) return;
     if (!isQuizReady) {
-      setQuizError('모든 문항에 답해주세요.');
+      setQuizError(t('quiz_answer_required'));
       return;
     }
 
@@ -268,7 +270,7 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
       const answers = quizData.map((question) => {
         const response = quizResponses[question.id];
         if (!response) {
-          throw new Error('모든 문항에 답해주세요.');
+          throw new Error(t('quiz_answer_required'));
         }
 
         if (question.type === 'multiple_choice' && question.options) {
@@ -297,6 +299,7 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           video: buildQuizPayload(),
+          language: settings.language,
           quiz: quizData,
           answers,
         }),
@@ -304,13 +307,13 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || '피드백을 생성하지 못했어요.');
+        throw new Error(data.error || t('quiz_feedback_error'));
       }
       setQuizFeedback(data.evaluation);
     } catch (error) {
       console.error('Quiz submission failed', error);
       const message =
-        error instanceof Error ? error.message : '피드백을 생성하지 못했어요.';
+        error instanceof Error ? error.message : t('quiz_feedback_error');
       setQuizError(message);
     } finally {
       setQuizSubmitting(false);
@@ -615,8 +618,14 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
       {isSourceOpen && video.sources && video.sources.length > 0 && (
         <div className={styles.sourceDrawer} onClick={(e) => e.stopPropagation()}>
           <div className={styles.sourceHeader}>
-            <span>Sources</span>
-            <button onClick={() => setIsSourceOpen(false)} style={{ background: 'none', border: 'none', color: '#888' }}>✕</button>
+            <span>{t('sources')}</span>
+            <button
+              onClick={() => setIsSourceOpen(false)}
+              style={{ background: 'none', border: 'none', color: '#888' }}
+              aria-label={t('close')}
+            >
+              ✕
+            </button>
           </div>
           <div className={styles.sourceList}>
             {video.sources.map((source, idx) => (
@@ -640,21 +649,21 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
         <div className={styles.quizDrawer} onClick={(e) => e.stopPropagation()}>
           <div className={styles.quizHeader}>
             <div>
-              <span>Reflective Quiz</span>
-              <p>기억력이 아니라 판단력을 시험하는 3개의 문항</p>
+              <span>{t('quiz_reflective_title')}</span>
+              <p>{t('quiz_reflective_subtitle')}</p>
             </div>
             <div className={styles.quizHeaderActions}>
-              <button onClick={refreshQuiz} disabled={quizLoading} aria-label="새 퀴즈">
+              <button onClick={refreshQuiz} disabled={quizLoading} aria-label={t('quiz_refresh')}>
                 ↻
               </button>
-              <button onClick={() => setIsQuizOpen(false)} aria-label="닫기">
+              <button onClick={() => setIsQuizOpen(false)} aria-label={t('close')}>
                 ✕
               </button>
             </div>
           </div>
 
           {quizLoading && (
-            <div className={styles.quizStatus}>퀴즈를 불러오는 중...</div>
+            <div className={styles.quizStatus}>{t('quiz_loading')}</div>
           )}
           {quizError && (
             <div className={styles.quizError}>{quizError}</div>
@@ -666,7 +675,9 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
                 <div key={question.id} className={styles.quizQuestion}>
                   <div className={styles.quizPrompt}>
                     <span className={styles.quizBadge}>
-                      {question.type === 'multiple_choice' ? '선택형' : '서술형'}
+                      {question.type === 'multiple_choice'
+                        ? t('quiz_choice_label')
+                        : t('quiz_open_label')}
                     </span>
                     <p>{question.prompt}</p>
                     {question.framingNote && (
@@ -691,7 +702,7 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
                       })}
                       <textarea
                         className={styles.quizReasoning}
-                        placeholder="이 선택을 한 이유를 적어보세요 (선택)"
+                        placeholder={t('quiz_choice_reason_placeholder')}
                         value={quizResponses[question.id]?.reasoning || ''}
                         onChange={(e) => setQuizReasoning(question.id, e.target.value)}
                       />
@@ -699,7 +710,7 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
                   ) : (
                     <textarea
                       className={styles.quizTextarea}
-                      placeholder="당신의 생각을 자유롭게 적어보세요."
+                      placeholder={t('quiz_open_placeholder')}
                       value={quizResponses[question.id]?.value || ''}
                       onChange={(e) => setQuizValue(question.id, e.target.value)}
                     />
@@ -729,7 +740,7 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
               onClick={submitQuiz}
               disabled={!isQuizReady || quizSubmitting}
             >
-              {quizSubmitting ? 'AI가 피드백 중...' : 'AI 피드백 받기'}
+              {quizSubmitting ? t('quiz_feedback_loading') : t('quiz_feedback_cta')}
             </button>
           )}
         </div>
@@ -750,14 +761,14 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
       {isAssetLoading && (
         <div className={styles.loadingOverlay}>
           <div className={styles.spinner} />
-          <div className={styles.loadingText}>Preparing Insight...</div>
+          <div className={styles.loadingText}>{t('preparingInsight')}</div>
         </div>
       )}
 
       {/* Bottom Modifier */}
       <div className={styles.modifierWrapper}>
         <div className={styles.modifierInput} role="button" tabIndex={0}>
-          <span>Type to Modify</span>
+          <span>{t('typeToModify')}</span>
           <ArrowUpCircle size={20} color="#FF6B35" />
         </div>
       </div>

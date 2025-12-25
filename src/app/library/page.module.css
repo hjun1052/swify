@@ -4,6 +4,8 @@
   color: var(--text-primary);
   padding: 20px;
   padding-bottom: 80px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .header {
@@ -51,6 +53,37 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
+}
+
+.tabBar {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 6px;
+  border-radius: 24px;
+  border: none;
+}
+
+.tabButton {
+  flex: 1;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  background: #ffffff;
+  color: #2d1f44;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tabButtonActive {
+  background: #ffb884;
+  color: #351403;
+}
+
+.tabPanel {
+  min-height: 50vh;
 }
 
 .card {
