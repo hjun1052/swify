@@ -1,0 +1,54 @@
+.section {
+  padding: 0 24px;
+  /* Align with Header/Chips */
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1rem;
+  border-left: 4px solid #3B82F6;
+  padding-left: 0.75rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #F9FAFB;
+  padding: 0.75rem;
+  border-radius: 12px;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.textContent {
+  flex: 1;
+}
+
+.mainText {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.subText {
+  font-size: 0.8rem;
+  color: #6B7280;
+  margin-top: 0.1rem;
+}

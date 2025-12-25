@@ -1,0 +1,599 @@
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  scroll-snap-align: start;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.mediaContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+}
+
+/* Add a slight zoom effect for dynamic feel */
+.activeImage {
+  animation: slowZoom 10s linear infinite alternate;
+}
+
+@keyframes slowZoom {
+  from {
+    transform: scale(1.0);
+  }
+
+  to {
+    transform: scale(1.1);
+  }
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.9) 90%);
+}
+
+.content {
+  position: absolute;
+  bottom: 120px;
+  left: 0;
+  width: 100%;
+  padding: 24px;
+  z-index: 10;
+  color: white;
+}
+
+/* New Progress Bar Styles */
+.progressTrack {
+  width: 100%;
+  height: 4px;
+  /* Thicker for visibility */
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.progressBar {
+  height: 100%;
+  background: var(--color-primary-orange);
+  width: 0%;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px var(--color-primary-orange);
+}
+
+.subtitles {
+  font-size: 24px;
+  /* Adjusted for longer text */
+  font-weight: 600;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  margin-bottom: 8px;
+  min-height: 3em;
+  /* Reserve space for multiline */
+}
+
+.metadata {
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.sourceInfo {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.actions {
+  position: absolute;
+  right: 16px;
+  bottom: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 20;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.iconCircle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  /* Darker for better contrast on images */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s;
+}
+
+.iconCircle:active {
+  transform: scale(0.9);
+}
+
+.modifierWrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 24px;
+  z-index: 20;
+}
+
+.modifierInput {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-full);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.modifierInput:active {
+  transform: scale(0.98);
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  gap: 16px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid var(--color-primary-orange);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.saving {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.saveSpinner {
+  animation: rotate 1.5s linear infinite;
+  color: #FF3B30;
+}
+
+.actionLabel {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 4px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pauseOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.pauseIcon {
+  color: white;
+  filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+  animation: fadeScale 0.4s ease-out forwards;
+}
+
+@keyframes fadeScale {
+  0% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+.sourceDrawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(80%, 380px);
+  padding: 24px;
+  background: rgba(5, 5, 5, 0.94);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: slideIn 0.25s ease forwards;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.sourceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sourceList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-right: 6px;
+}
+
+.sourceItem {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.sourceItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(-4px);
+}
+
+.sourceFavicon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  background-position: center;
+  background-size: cover;
+  flex-shrink: 0;
+}
+
+.sourceText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sourceTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sourceUrl {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  word-break: break-all;
+}
+
+.quizDrawer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-height: 85%;
+  padding: 24px;
+  background: rgba(9, 9, 9, 0.92);
+  color: #fff;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.quizHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quizHeader span {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.quizHeader p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.quizHeaderActions {
+  display: flex;
+  gap: 8px;
+}
+
+.quizHeaderActions button {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.quizStatus {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.quizError {
+  color: #ff8a65;
+  font-size: 14px;
+}
+
+.quizContent {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quizQuestion {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quizPrompt p {
+  margin: 8px 0;
+  font-weight: 600;
+}
+
+.quizPrompt small {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.quizBadge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.quizOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quizOption {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  color: white;
+  cursor: pointer;
+  transition: border 0.2s, background 0.2s;
+}
+
+.quizOption small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.quizOptionSelected {
+  border-color: var(--color-primary-orange);
+  background: rgba(255, 107, 53, 0.15);
+}
+
+.quizTextarea,
+.quizReasoning {
+  width: 100%;
+  min-height: 80px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  padding: 12px;
+  resize: vertical;
+  font-size: 14px;
+}
+
+.quizReasoning {
+  min-height: 60px;
+}
+
+.quizFeedback {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quizFeedback strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.quizFeedback ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quizFeedback li p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.quizFeedback li small {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.quizSubmit {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  background: var(--color-primary-orange);
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.quizSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

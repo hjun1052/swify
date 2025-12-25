@@ -1,0 +1,51 @@
+.scrollWrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+  min-height: 80px;
+  /* Ensure it takes up space even if children are weird */
+  flex-shrink: 0;
+  /* Don't allow flexbox to squash it to 0 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollWrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.track {
+  display: flex;
+  padding: 20px 24px 40px 24px;
+  gap: 12px;
+  width: max-content;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  background-color: var(--color-white);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  color: var(--color-text-muted);
+}
+
+.chip.active {
+  color: #1F2937;
+  /* Darker text for readability on colored bg */
+  font-weight: 600;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chip:hover:not(.active) {
+  background-color: #F9FAFB;
+  transform: translateY(-1px);
+}

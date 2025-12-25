@@ -1,0 +1,121 @@
+.container {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding-left: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.heading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: 0.75rem;
+}
+
+.scrollArea {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-right: 1rem;
+  /* Catch scroll end */
+  scrollbar-width: none;
+  /* Hide scrollbar Firefox */
+}
+
+.scrollArea::-webkit-scrollbar {
+  display: none;
+  /* Hide scrollbar Chrome/Safari */
+}
+
+.card {
+  flex: 0 0 160px;
+  /* Fixed width */
+  height: 220px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s;
+  text-align: left;
+}
+
+.card:active {
+  transform: scale(0.96);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  color: white;
+  z-index: 10;
+}
+
+.category {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+  margin-bottom: 0.25rem;
+  display: inline-block;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0.5rem 0;
+}
+
+.playIcon {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.skeleton {
+  background: #E5E7EB;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0));
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

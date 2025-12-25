@@ -1,0 +1,56 @@
+:root {
+  /* Brand Palette */
+  --color-bg-cream: #FFEFD5; /* PapayaWhip-ish, adjusted for warmth */
+  --color-bg-peach: #FFE4B5; /* Moccasin */
+  --color-primary-orange: #FF6B35; /* Vibrant Orange */
+  --color-text-dark: #2D2D2D;
+  --color-text-muted: #666666;
+  --color-white: #FFFFFF;
+  --color-glass-thin: rgba(255, 255, 255, 0.4);
+  --color-glass-heavy: rgba(255, 255, 255, 0.8);
+  
+  /* UI Tokens */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  
+  --shadow-sm: 0 4px 6px rgba(0,0,0,0.05);
+  --shadow-float: 0 10px 30px rgba(0,0,0,0.1);
+  
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  --max-mobile-width: 480px;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Future dark mode hooks - keeping it simple for now as requested design is light/warm */
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  color: var(--color-text-dark);
+  background: var(--color-bg-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utilities */
+.glass {
+  background: var(--color-glass-heavy);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

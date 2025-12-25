@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String          @id @default(uuid())
+  username    String          @unique
+  password    String
+  counts      CategoryCount[]
+  savedVideos SavedVideo[]
+  watchHistory WatchHistory[]
+  reflections DailyReflection[]
+}
+
+model CategoryCount {
+  id        String @id @default(uuid())
+  category  String
+  count     Int    @default(0)
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, category])
+}
+
+model SavedVideo {
+  id        String       @id
+  title     String
+  creator   String
+  voice     String
+  bgmIndex  Int
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  slides    VideoSlide[]
+  createdAt DateTime     @default(now())
+}
+
+model VideoSlide {
+  id           String     @id @default(uuid())
+  videoId      String
+  video        SavedVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  text         String
+  imageQuery   String
+  imageUrl     String
+  audioUrl     String
+  order        Int
+}
+
+model WatchHistory {
+  id        String   @id @default(uuid())
+  videoId   String
+  title     String
+  category  String
+  style     String?
+  watchedAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, watchedAt])
+}
+
+model DailyReflection {
+  id             String   @id @default(uuid())
+  question       String
+  answer         String?
+  summary        String
+  reflectionDate DateTime @default(now())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+}

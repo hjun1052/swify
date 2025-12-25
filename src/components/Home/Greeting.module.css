@@ -1,0 +1,31 @@
+.container {
+  padding: 40px 24px 24px;
+  text-align: center;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text-dark);
+}
+
+.name {
+  color: var(--color-primary-orange);
+  font-weight: 700;
+  /* Simple pop-in animation */
+  display: inline-block;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
