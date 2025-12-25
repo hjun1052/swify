@@ -64,7 +64,11 @@ function FeedContent() {
         currentBatchCount.current += 1;
 
         if (!isInitial) {
-          setToast({ visible: true, message: `Up next: ${newVideos[0].title}` });
+          setToast({
+            visible: true,
+            // "Done! Scroll down to see 'Title'"
+            message: `${t('generationComplete') || 'Done!'} Scroll down to see: ${newVideos[0].title}`
+          });
         }
 
         // Only trigger next if we haven't hit the limit
@@ -157,6 +161,14 @@ function FeedContent() {
   const lastVideo = videos[videos.length - 1];
   const showEndCard = videos.length > 0 && (videos.length % BATCH_SIZE === 0);
 
+  const handleModify = (query: string) => {
+    console.log(`[User] Modifying feed with: ${query}`);
+    setToast({ visible: true, message: `Generatng: ${query}...` });
+    // Reset batch count to allow new generation sequence
+    currentBatchCount.current = 0;
+    fetchVideoSequence(query, false);
+  };
+
   return (
     <>
       <div className={styles.feedWrapper}>
@@ -169,6 +181,7 @@ function FeedContent() {
         </button>
         <VideoFeed
           videos={videos}
+          onModify={handleModify}
           endCard={showEndCard ? (
             <RecommendationCard
               baseTopic={lastVideo.title} // Or use the query that generated it? Title is fine.

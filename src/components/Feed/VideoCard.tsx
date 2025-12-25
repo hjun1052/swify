@@ -11,10 +11,12 @@ import { useSettings } from '@/lib/store';
 interface VideoCardProps {
   video: VideoShort;
   isActive: boolean;
+  onModify?: (query: string) => void;
 }
 
-export default function VideoCard({ video, isActive }: VideoCardProps) {
+export default function VideoCard({ video, isActive, onModify }: VideoCardProps) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [modifierText, setModifierText] = useState("");
   const [slideProgress, setSlideProgress] = useState(0); // 0-100% of current slide
   const [assetTimedOut, setAssetTimedOut] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -247,13 +249,13 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
 
   const isQuizReady = quizData
     ? quizData.every((question) => {
-        const response = quizResponses[question.id];
-        if (!response || !response.value) return false;
-        if (question.type === 'open') {
-          return response.value.trim().length > 0;
-        }
-        return true;
-      })
+      const response = quizResponses[question.id];
+      if (!response || !response.value) return false;
+      if (question.type === 'open') {
+        return response.value.trim().length > 0;
+      }
+      return true;
+    })
     : false;
 
   const submitQuiz = async () => {
@@ -280,9 +282,8 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
           return {
             questionId: question.id,
             answer: selected
-              ? `${selected.label}${
-                  selected.description ? ` — ${selected.description}` : ''
-                }`
+              ? `${selected.label}${selected.description ? ` — ${selected.description}` : ''
+              }`
               : response.value,
             reasoning: response.reasoning,
           };
@@ -765,12 +766,31 @@ export default function VideoCard({ video, isActive }: VideoCardProps) {
         </div>
       )}
 
-      {/* Bottom Modifier */}
-      <div className={styles.modifierWrapper}>
-        <div className={styles.modifierInput} role="button" tabIndex={0}>
-          <span>{t('typeToModify')}</span>
-          <ArrowUpCircle size={20} color="#FF6B35" />
-        </div>
+      {/* Low-Key Modifier Input */}
+      <div className={styles.modifierWrapper} onClick={(e) => e.stopPropagation()}>
+        <form
+          className={styles.modifierForm}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (modifierText.trim()) {
+              onModify?.(modifierText);
+              setModifierText("");
+              // Optional: show local feedback like "Queued..."
+            }
+          }}
+        >
+          <input
+            type="text"
+            className={styles.modifierInput}
+            placeholder={t('typeToModify')}
+            value={modifierText}
+            onChange={(e) => setModifierText(e.target.value)}
+            onFocus={() => setIsPaused(true)} // Pause when typing
+          />
+          <button type="submit" className={styles.modifierSubmit} aria-label="Modify Feed">
+            <ArrowUpCircle size={24} color={modifierText.trim() ? "#FF6B35" : "#666"} />
+          </button>
+        </form>
       </div>
     </div>
   );

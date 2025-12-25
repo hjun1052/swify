@@ -29,11 +29,14 @@ export async function GET() {
       orderBy: { watchedAt: "desc" },
     });
 
-    const categorySummary = entries.reduce<Record<string, number>>((acc, entry) => {
-      const cat = entry.category;
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    }, {});
+    const categorySummary = entries.reduce<Record<string, number>>(
+      (acc, entry) => {
+        const cat = entry.category;
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+      },
+      {}
+    );
 
     const categories: CategorySummary[] = Object.entries(categorySummary).map(
       ([category, count]) => ({ category, count })
@@ -65,7 +68,10 @@ export async function GET() {
     });
   } catch (error) {
     console.error("[History] GET failed", error);
-    return NextResponse.json({ error: "Failed to load history" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load history" },
+      { status: 500 }
+    );
   }
 }
 
@@ -119,9 +125,30 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Increment UserCategoryScore
+    await prisma.userCategoryScore.upsert({
+      where: {
+        userId_category: {
+          userId: user.id,
+          category: normalizedCategory,
+        },
+      },
+      update: {
+        score: { increment: 1 },
+      },
+      create: {
+        userId: user.id,
+        category: normalizedCategory,
+        score: 1,
+      },
+    });
+
     return NextResponse.json({ entry });
   } catch (error) {
     console.error("[History] POST failed", error);
-    return NextResponse.json({ error: "Failed to log history" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to log history" },
+      { status: 500 }
+    );
   }
 }

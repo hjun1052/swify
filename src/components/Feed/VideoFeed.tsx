@@ -7,10 +7,10 @@ import styles from './VideoFeed.module.css';
 
 interface VideoFeedProps {
   videos: VideoShort[];
-  endCard?: React.ReactNode;
+  onModify?: (query: string) => void;
 }
 
-export default function VideoFeed({ videos, endCard }: VideoFeedProps) {
+export default function VideoFeed({ videos, endCard, onModify }: VideoFeedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -47,6 +47,7 @@ export default function VideoFeed({ videos, endCard }: VideoFeedProps) {
           <VideoCard
             video={video}
             isActive={index === activeIndex}
+            onModify={onModify}
           />
         </div>
       ))}

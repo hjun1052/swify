@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
-import {
-  QuizAnswer,
-  QuizEvaluation,
-  QuizQuestion,
-} from "@/types/quiz";
+import prisma from "@/lib/prisma";
+import { QuizAnswer, QuizEvaluation, QuizQuestion } from "@/types/quiz";
 
 interface VideoSummary {
   id: string;
@@ -45,8 +42,7 @@ const QUIZ_TOOL = {
               prompt: { type: "string" },
               framingNote: {
                 type: "string",
-                description:
-                  "Short context on what judgment or lens to apply.",
+                description: "Short context on what judgment or lens to apply.",
               },
               options: {
                 type: "array",
@@ -161,7 +157,10 @@ function coerceQuizQuestions(questions: QuizQuestion[]): QuizQuestion[] {
   return sanitized;
 }
 
-async function requestQuiz(video: VideoSummary, language: string): Promise<QuizQuestion[]> {
+async function requestQuiz(
+  video: VideoSummary,
+  language: string
+): Promise<QuizQuestion[]> {
   const summary = summarizeVideo(video);
   const targetLanguage = LANGUAGE_LABELS[language] || "English";
   const completion = await openai.chat.completions.create({
@@ -170,8 +169,7 @@ async function requestQuiz(video: VideoSummary, language: string): Promise<QuizQ
     messages: [
       {
         role: "system",
-        content:
-          `You design quick reflection quizzes for short-form explainers. Each question should demand a judgment call or perspective shift. There are no correct answers. Respond entirely in ${targetLanguage}.`,
+        content: `You design quick reflection quizzes for short-form explainers. Each question should demand a judgment call or perspective shift. There are no correct answers. Respond entirely in ${targetLanguage}.`,
       },
       {
         role: "user",
@@ -230,8 +228,7 @@ async function requestEvaluation(params: {
     messages: [
       {
         role: "system",
-        content:
-          `You are a reflective learning coach. Respond with encouragement, highlight trade-offs, and never mark answers as correct or incorrect. Write every response in ${targetLanguage}.`,
+        content: `You are a reflective learning coach. Respond with encouragement, highlight trade-offs, and never mark answers as correct or incorrect. Write every response in ${targetLanguage}.`,
       },
       {
         role: "user",
@@ -256,7 +253,9 @@ Provide feedback referencing their reasoning.`,
     throw new Error("Quiz evaluation failed");
   }
 
-  const parsed = JSON.parse(toolCall.function.arguments) as QuizEvaluationPayload;
+  const parsed = JSON.parse(
+    toolCall.function.arguments
+  ) as QuizEvaluationPayload;
   return parsed.evaluation;
 }
 
@@ -307,12 +306,28 @@ export async function POST(request: Request) {
       language: requestedLanguage,
     });
 
+    // Increment Score if category is present
+    if (video.category) {
+      const user = await (await import("@/lib/user")).getDefaultUser();
+      await prisma.userCategoryScore.upsert({
+        where: {
+          userId_category: {
+            userId: user.id,
+            category: video.category,
+          },
+        },
+        update: { score: { increment: 2 } },
+        create: {
+          userId: user.id,
+          category: video.category,
+          score: 2,
+        },
+      });
+    }
+
     return NextResponse.json({ evaluation });
   } catch (error) {
     console.error("[Quiz API] Failure", error);
-    return NextResponse.json(
-      { error: "Quiz service failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Quiz service failed" }, { status: 500 });
   }
 }

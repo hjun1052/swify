@@ -15,6 +15,8 @@ model User {
   savedVideos SavedVideo[]
   watchHistory WatchHistory[]
   reflections DailyReflection[]
+  scores      UserCategoryScore[]
+  plantedTrees PlantedTree[]
 }
 
 model CategoryCount {
@@ -72,4 +74,24 @@ model DailyReflection {
   userId         String
   user           User     @relation(fields: [userId], references: [id])
   createdAt      DateTime @default(now())
+}
+
+model UserCategoryScore {
+  id        String @id @default(uuid())
+  category  String
+  score     Int    @default(0)
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, category])
+}
+
+model PlantedTree {
+  id        String   @id @default(uuid())
+  category  String
+  x         Float
+  y         Float
+  plantedAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }

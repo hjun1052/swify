@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 import { scrapeWeb, scrapeImages } from "@/lib/crawler";
+import { ALL_CATEGORIES } from "@/lib/categories";
 
 // Interfaces match the frontend expectation
 export interface Slide {
@@ -182,6 +183,8 @@ export async function GET(request: Request) {
     // Default to 'learn' if unknown
     const selectedStyle = STYLE_PROMPTS[styleParam] || STYLE_PROMPTS["learn"];
 
+    // ... (previous code)
+
     const prompt = `
     You are an elite short-form content director. Your goal is to turn search data into a COHESIVE, ADDICTIVE, and SUBSTANTIAL narrative.
     
@@ -189,7 +192,7 @@ export async function GET(request: Request) {
     - The value of "image_query" MUST be written in ENGLISH ONLY.
     - This rule OVERRIDES Target Language.
     - If ANY non-English character appears in "image_query", the entire output is INVALID.
-    - Fields except "image_query" MUST be written in Target Language.
+    - Fields except "image_query" and "category" MUST be written in Target Language.
     ---
     ## YOUR DIRECTIVE
     ${selectedStyle}
@@ -223,6 +226,7 @@ export async function GET(request: Request) {
     {
       "reasoning": "How did you construct the narrative arc from the research? (Explain the logical flow)",
       "title": "A punchy, context-rich title (in ${targetLanguage})",
+      "category": "A specific English category from the list below that best fits this content.",
       "suggestedNextQuery": "A logical deep-dive follow-up question (in ${targetLanguage})",
       "slides": [
         {
@@ -231,9 +235,13 @@ export async function GET(request: Request) {
         }
       ]
     }
-Ensure the "title" is clear and accurately reflects the main topic (e.g. "The Future of AI" or "SpaceX Starship"), as it will be used as a fallback for image searches if specific queries fail.
-Ensure "suggestedNextQuery" is a related "rabbit hole" topic (3-4 words) that would lead to another deep-dive video.
 
+    ## CATEGORY LIST (Choose one from this EXACT list)
+    ${ALL_CATEGORIES.map((c) => `- ${c}`).join("\n")}
+    
+Ensure the "title" is clear and accurately reflects the main topic.
+Ensure "suggestedNextQuery" is a related "rabbit hole" topic.
+ 
 Output only valid JSON.`;
 
     const chatCompletion = await openai.chat.completions.create({
@@ -310,7 +318,8 @@ Output only valid JSON.`;
       bgmIndex: bgmIndex,
       sources: sources,
       style: styleParam,
-      category: STYLE_CATEGORY_MAP[styleParam] || "LEARN",
+      category:
+        scriptJson.category || STYLE_CATEGORY_MAP[styleParam] || "LEARN",
     };
 
     return NextResponse.json({ videos: [video] });

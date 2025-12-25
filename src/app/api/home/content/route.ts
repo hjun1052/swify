@@ -8,64 +8,68 @@ const SECTIONS_CONFIG: any = {
     {
       id: "briefing",
       query: "top technology news today Dec 2025",
-      category: "TECH",
+      category: "Future Tech",
     },
     {
       id: "issues",
       query: "major global news headlines Dec 2025",
-      category: "GLOBAL",
+      category: "Politics",
     },
     {
       id: "facts",
       query: "fascinating new facts and world weather 2025",
-      category: "LIFE",
+      category: "Environment",
     },
   ],
   ko: [
     {
       id: "briefing",
       query: "오늘의 주요 기술 뉴스 및 IT 동향 2025년 12월",
-      category: "TECH",
+      category: "Future Tech",
     },
     {
       id: "issues",
       query: "전 세계 주요 뉴스 헤드라인 2025년 12월",
-      category: "GLOBAL",
+      category: "Politics",
     },
     {
       id: "facts",
       query: "오늘의 날씨 정보와 흥미로운 상식 2025",
-      category: "LIFE",
+      category: "Environment",
     },
   ],
   ja: [
     {
       id: "briefing",
       query: "今日の最新テクノロジーニュース 2025年12月",
-      category: "TECH",
+      category: "Future Tech",
     },
     {
       id: "issues",
       query: "主要な世界のニュース 2025年12月",
-      category: "GLOBAL",
+      category: "Politics",
     },
-    { id: "facts", query: "興味深い豆知識と世界の天気 2025", category: "LIFE" },
+    {
+      id: "facts",
+      query: "興味深い豆知識と世界の天気 2025",
+      category: "Environment",
+    },
   ],
   es: [
     {
       id: "briefing",
       query: "noticias tecnológicas de hoy diciembre 2025",
-      category: "TECH",
+      category: "Future Tech",
     },
     {
       id: "issues",
       query: "titulares de noticias globales hoy diciembre 2025",
-      category: "GLOBAL",
+      category: "Politics",
     },
     {
       id: "facts",
       query: "datos curiosos y clima mundial hoy 2025",
-      category: "LIFE",
+      category: "Environment",
     },
   ],
 };

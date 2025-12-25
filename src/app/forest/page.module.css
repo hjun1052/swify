@@ -1,0 +1,163 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-color: #1a1a1a;
+  color: white;
+}
+
+.viewport {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.viewport:active {
+  cursor: grabbing;
+}
+
+.forestLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Pattern background */
+  background-image: url("/trees/gbg.png");
+  background-repeat: repeat;
+  /* Pixelated rendering */
+  image-rendering: pixelated;
+  width: 4000px;
+  /* Arbitrary large size for scrolling */
+  height: 4000px;
+  transform-origin: 0 0;
+}
+
+.plantedTree {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  /* Anchor at bottom center */
+  width: 64px;
+  /* Adjust based on asset size */
+  height: auto;
+  cursor: pointer;
+  image-rendering: pixelated;
+  transition: transform 0.1s;
+}
+
+.plantedTree:hover {
+  transform: translate(-50%, -105%) scale(1.1);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+  z-index: 10;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: "Press Start 2P", cursive, monospace;
+  /* Pixel font fallback */
+  font-size: 10px;
+  pointer-events: none;
+  white-space: nowrap;
+  display: none;
+  margin-bottom: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.plantedTree:hover .tooltip {
+  display: block;
+}
+
+/* Inventory UI */
+.inventoryBar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(40, 40, 40, 0.9);
+  z-index: 1000;
+  border: 2px solid #555;
+  border-radius: 12px;
+  padding: 10px 20px;
+  display: flex;
+  gap: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  max-width: 90vw;
+  overflow-x: auto;
+}
+
+.inventoryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  min-width: 80px;
+  transition: all 0.2s;
+}
+
+.inventoryItem.ready {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  cursor: pointer;
+}
+
+.inventoryItem.ready:hover {
+  background: rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
+}
+
+.treeIcon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.itemName {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #ccc;
+  text-transform: capitalize;
+}
+
+.progressContainer {
+  width: 100%;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.progressBar {
+  height: 100%;
+  background: #10B981;
+  transition: width 0.3s ease;
+}
+
+.plantingMode {
+  cursor: url("/trees/large.png") 32 64, crosshair !important;
+  /* Custom cursor fallback */
+}
+
+/* Ghost tree following cursor during planting */
+.ghostTree {
+  position: fixed;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 100;
+  transform: translate(-50%, -100%);
+  image-rendering: pixelated;
+  width: 64px;
+}
