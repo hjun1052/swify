@@ -23,7 +23,7 @@ function FeedContent() {
 
   const [videos, setVideos] = useState<VideoShort[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: "" });
+  const [toast, setToast] = useState<{ visible: boolean; message: string; duration?: number }>({ visible: false, message: "" });
 
   const fetchedQueries = React.useRef<Set<string>>(new Set());
   // We need to track how many videos we've generated in the *current* auto-gen sequence
@@ -31,11 +31,11 @@ function FeedContent() {
   // Using a ref for the current batch count is safer for async closures.
   const currentBatchCount = React.useRef(0);
 
-  const fetchVideoSequence = useCallback(async (query: string, isInitial = false) => {
+  const fetchVideoSequence = useCallback(async (query: string, isInitial = false, insertAfterIndex = -1) => {
     if (!query || fetchedQueries.current.has(query)) return;
 
-    // Check batch limit BEFORE fetching
-    if (currentBatchCount.current >= BATCH_SIZE) {
+    // Check batch limit BEFORE fetching (only for auto-gen, not manual modify)
+    if (insertAfterIndex === -1 && currentBatchCount.current >= BATCH_SIZE) {
       console.log("[Auto-Gen] Batch limit reached. Stopping auto-gen.");
       return;
     }
@@ -44,35 +44,51 @@ function FeedContent() {
     if (isInitial) setLoading(true);
 
     try {
-      console.log(`[Auto-Gen] Fetching: ${query} (Batch: ${currentBatchCount.current + 1}/${BATCH_SIZE})`);
-      // Use current settings from hook (captured in closure or passed?)
-      // Since fetchVideoSequence is created once (toggled by dependencies), we need to ensure it uses latest settings.
+      console.log(`[Gen] Fetching: ${query}`);
 
       const styleParam = searchParams.get('style') || 'learn';
-      const res = await fetch(`/api/generate?q=${encodeURIComponent(query)}&lang=${settings.language}&len=${settings.videoLength}&style=${styleParam}`);
+      // If manually modifying (insertAfterIndex > -1), request just 1 video for speed/focus
+      const limit = insertAfterIndex > -1 ? 1 : undefined;
+
+      const res = await fetch(`/api/generate?q=${encodeURIComponent(query)}&lang=${settings.language}&len=${settings.videoLength}&style=${styleParam}${limit ? `&limit=${limit}` : ''}`);
       const data = await res.json();
+      console.log(`[Gen] API Response:`, data);
       const newVideos: VideoShort[] = data.videos || [];
+      console.log(`[Gen] New Videos Count:`, newVideos.length);
 
       if (newVideos.length > 0) {
         setVideos(prev => {
+          // If inserting specifically after a video
+          if (insertAfterIndex > -1) {
+            console.log(`[Gen] Inserting at index ${insertAfterIndex + 1}`);
+            const updated = [...prev];
+            // Filter out duplicates if any
+            const uniqueNew = newVideos.filter(nv => !prev.some(pv => pv.id === nv.id));
+            if (uniqueNew.length === 0) console.warn("[Gen] No unique videos to insert");
+            updated.splice(insertAfterIndex + 1, 0, ...uniqueNew);
+            return updated;
+          }
+
           const exists = prev.some(v => v.id === newVideos[0].id);
           if (exists) return prev;
           return [...prev, ...newVideos];
         });
 
-        // Increment batch count on success
-        currentBatchCount.current += 1;
+        // Increment batch count only for auto-chain
+        if (insertAfterIndex === -1) {
+          currentBatchCount.current += 1;
+        }
 
         if (!isInitial) {
           setToast({
             visible: true,
-            // "Done! Scroll down to see 'Title'"
-            message: `${t('generationComplete') || 'Done!'} Scroll down to see: ${newVideos[0].title}`
+            message: `${t('generationComplete') || 'Done!'} Scroll down to see: ${newVideos[0].title}`,
+            duration: 5000
           });
         }
 
-        // Only trigger next if we haven't hit the limit
-        if (currentBatchCount.current < BATCH_SIZE) {
+        // Only trigger next auto-gen if not manual modify and limit not hit
+        if (insertAfterIndex === -1 && currentBatchCount.current < BATCH_SIZE) {
           const nextQuery = newVideos[0].suggestedNextQuery;
           if (nextQuery) {
             console.log(`[Auto-Gen] Queuing next: ${nextQuery}`);
@@ -80,9 +96,6 @@ function FeedContent() {
               triggerNextRef.current(nextQuery);
             }, 1000);
           }
-        } else {
-          console.log("[Auto-Gen] Batch complete. Ready for recommendations.");
-          // Force re-render to show end card if needed? State update above handles it.
         }
       }
     } catch (error) {
@@ -161,12 +174,17 @@ function FeedContent() {
   const lastVideo = videos[videos.length - 1];
   const showEndCard = videos.length > 0 && (videos.length % BATCH_SIZE === 0);
 
-  const handleModify = (query: string) => {
-    console.log(`[User] Modifying feed with: ${query}`);
-    setToast({ visible: true, message: `Generatng: ${query}...` });
-    // Reset batch count to allow new generation sequence
-    currentBatchCount.current = 0;
-    fetchVideoSequence(query, false);
+  const handleModify = (query: string, index: number) => {
+    console.log(`[User] Modifying feed with: ${query} at index ${index}`);
+
+    // Capture context from current video
+    const currentVideo = videos[index];
+    const contextQuery = currentVideo ? `${currentVideo.title} regarding ${query}` : query;
+
+    setToast({ visible: true, message: `Thinking: ${query}... This may take a moment.`, duration: 0 }); // Persistent
+
+    // Fetch and Insert immediately after current index with context-aware query
+    fetchVideoSequence(contextQuery, false, index);
   };
 
   return (
@@ -194,6 +212,7 @@ function FeedContent() {
         message={toast.message}
         isVisible={toast.visible}
         onClose={() => setToast({ ...toast, visible: false })}
+        duration={toast.duration}
         onClick={() => {
           window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
           setToast({ ...toast, visible: false });

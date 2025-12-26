@@ -7,7 +7,7 @@ import SearchBar from '@/components/Home/SearchBar';
 import CategoryChips from '@/components/Home/CategoryChips';
 import styles from './page.module.css';
 
-import { Library } from 'lucide-react';
+import { Library, Trees } from 'lucide-react';
 import RecommendationCarousel, { CarouselItem } from '@/components/Home/RecommendationCarousel';
 import ProfileDropdown from '@/components/Profile/ProfileDropdown';
 import { useSettings } from '@/lib/store';
@@ -93,9 +93,14 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <button className={styles.iconButton} onClick={() => router.push('/library')}>
-          <Library size={24} />
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className={styles.iconButton} onClick={() => router.push('/library')} aria-label={t('library')}>
+            <Library size={24} />
+          </button>
+          <button className={styles.iconButton} onClick={() => router.push('/forest')} aria-label={t('forest')}>
+            <Trees size={24} />
+          </button>
+        </div>
         <ProfileDropdown />
       </header>
 

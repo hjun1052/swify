@@ -17,6 +17,29 @@ model User {
   reflections DailyReflection[]
   scores      UserCategoryScore[]
   plantedTrees PlantedTree[]
+  lastRewardDate DateTime?
+  tiles       UserTile[]
+  placedTiles PlacedTile[]
+}
+
+model UserTile {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  type   String
+  count  Int    @default(0)
+
+  @@unique([userId, type])
+}
+
+model PlacedTile {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  x         Int
+  y         Int
+  placedAt  DateTime @default(now())
 }
 
 model CategoryCount {

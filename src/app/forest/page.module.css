@@ -147,8 +147,7 @@
 }
 
 .plantingMode {
-  cursor: url("/trees/large.png") 32 64, crosshair !important;
-  /* Custom cursor fallback */
+  cursor: crosshair !important;
 }
 
 /* Ghost tree following cursor during planting */
@@ -158,6 +157,45 @@
   opacity: 0.6;
   z-index: 100;
   transform: translate(-50%, -100%);
+  /* Tree anchor defaults */
   image-rendering: pixelated;
   width: 64px;
+}
+
+/* Tabs & New UI */
+.inventoryBar {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-family: inherit;
+  padding: 4px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tabs button.activeTab {
+  color: #fff;
+  border-bottom: 2px solid #10B981;
+}
+
+.itemsRow {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  width: 100%;
+  padding-bottom: 4px;
 }

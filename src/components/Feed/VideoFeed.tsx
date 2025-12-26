@@ -7,7 +7,8 @@ import styles from './VideoFeed.module.css';
 
 interface VideoFeedProps {
   videos: VideoShort[];
-  onModify?: (query: string) => void;
+  endCard?: React.ReactNode;
+  onModify?: (query: string, index: number) => void;
 }
 
 export default function VideoFeed({ videos, endCard, onModify }: VideoFeedProps) {
@@ -47,7 +48,7 @@ export default function VideoFeed({ videos, endCard, onModify }: VideoFeedProps)
           <VideoCard
             video={video}
             isActive={index === activeIndex}
-            onModify={onModify}
+            onModify={(query) => onModify?.(query, index)}
           />
         </div>
       ))}

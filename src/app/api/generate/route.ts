@@ -212,7 +212,7 @@ export async function GET(request: Request) {
     
     ## NARRATIVE CONSTRAINTS (CRITICAL)
     1. **NARRATIVE ARC**: The script MUST HAVE A BEGINNING, MIDDLE, and END. It cannot be localized facts. 
-    2. **TRANSITIONAL FLOW**: Each slide must explicitly transition from the previous one. Use connectors like: "Because of this...", "However, the real secret is...", "This leads us to...", "Meanwhile, in the lab...".
+    2. **TRANSITIONAL FLOW**: Each slide must explicitly transition from the previous one. Use connectors like: "Because of this...", "However, the real secret is...", "This leads us to...", "Meanwhile, in the lab..." etc. in ${targetLanguage}.
     3. **SUBSTANCE OVER FILLER**: 
        - NEVER ask multiple rhetorical questions in a row. 
        - NEVER say "I'll tell you more" or "Watch until the end".

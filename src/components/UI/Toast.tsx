@@ -9,17 +9,18 @@ interface ToastProps {
   isVisible: boolean;
   onClose: () => void;
   onClick?: () => void;
+  duration?: number; // 0 = persistent
 }
 
-export default function Toast({ message, isVisible, onClose, onClick }: ToastProps) {
+export default function Toast({ message, isVisible, onClose, onClick, duration = 5000 }: ToastProps) {
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && duration > 0) {
       const timer = setTimeout(() => {
         onClose();
-      }, 5000); // Auto-hide after 5s
+      }, duration);
       return () => clearTimeout(timer);
     }
-  }, [isVisible, onClose]);
+  }, [isVisible, onClose, duration]);
 
   if (!isVisible) return null;
 
