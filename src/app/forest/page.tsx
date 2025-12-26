@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
 import { MoveLeft, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSettings } from "@/lib/store";
 
 // Define score thresholds and associated images
 const GROWTH_STAGES = [
@@ -28,8 +29,14 @@ interface Tree {
   plantedAt: string;
 }
 
+interface Reward {
+  count: number;
+  type: string;
+}
+
 export default function ForestPage() {
   const router = useRouter();
+  const { t } = useSettings();
   const [tiles, setTiles] = useState<{ type: string; count: number }[]>([]);
   const [placedTiles, setPlacedTiles] = useState<{ id: string; type: string; x: number; y: number }[]>([]);
   const [activeTab, setActiveTab] = useState<'trees' | 'tiles'>('trees');
@@ -87,7 +94,9 @@ export default function ForestPage() {
       if (data.placedTiles) setPlacedTiles(data.placedTiles);
 
       if (data.newRewards) {
-        alert(`Daily Login Reward! obtained: ${data.newRewards.map((t: any) => `${t.count} ${t.type}`).join(', ')}`);
+        const rewards = data.newRewards as Reward[];
+        const rewardText = rewards.map((reward) => `${reward.count} ${reward.type}`).join(', ');
+        alert(t("forest_login_reward").replace("{rewards}", rewardText));
       }
     } catch (e) {
       console.error("Failed to load forest", e);
@@ -226,7 +235,7 @@ export default function ForestPage() {
         const data = await res.json();
         if (!data.success) {
           setTrees((prev) => prev.filter((t) => t.id !== tempId));
-          alert(data.error);
+          alert(data.error || t("forest_action_failed"));
         } else {
           fetchForestData();
         }
@@ -258,7 +267,7 @@ export default function ForestPage() {
           setPlacedTiles(prev => prev.filter(t => t.id !== tempId));
           // Revert inv
           setTiles(prev => prev.map(t => t.type === plantingCategory ? { ...t, count: t.count + 1 } : t));
-          alert(data.error);
+          alert(data.error || t("forest_action_failed"));
         } else {
           fetchForestData();
         }
@@ -380,14 +389,14 @@ export default function ForestPage() {
       <div className={styles.inventoryBar}>
         {/* Simple Tabs */}
         <div className={styles.tabs}>
-          <button className={activeTab === 'trees' ? styles.activeTab : ''} onClick={() => setActiveTab('trees')}>Trees</button>
-          <button className={activeTab === 'tiles' ? styles.activeTab : ''} onClick={() => setActiveTab('tiles')}>Tiles</button>
+          <button className={activeTab === 'trees' ? styles.activeTab : ''} onClick={() => setActiveTab('trees')}>{t('forest_trees_tab')}</button>
+          <button className={activeTab === 'tiles' ? styles.activeTab : ''} onClick={() => setActiveTab('tiles')}>{t('forest_tiles_tab')}</button>
         </div>
 
         <div className={styles.itemsRow}>
-          {loading ? <div>Loading...</div> :
+          {loading ? <div>{t('loading')}</div> :
             activeTab === 'trees' ? (
-              scores.length === 0 ? <div style={{ color: '#888', fontSize: '0.8rem' }}>Watch videos to get seeds!</div> :
+              scores.length === 0 ? <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('forest_watch_more')}</div> :
                 scores.map(s => {
                   const stage = getStage(s.score);
                   const isReady = s.score >= 6;
@@ -397,13 +406,13 @@ export default function ForestPage() {
                       onClick={() => startPlanting(s)}>
                       <img src={`/trees/${stage.image}`} className={styles.treeIcon} style={{ filter: `hue-rotate(${getCategoryHue(s.category)}deg)` }} />
                       <div className={styles.itemName}>{s.category}</div>
-                      <div className={styles.itemName} style={{ fontSize: '0.6rem' }}>Score: {s.score}</div>
-                      {isReady && <div style={{ fontSize: '0.6rem', color: '#10B981' }}>PLANT</div>}
+                      <div className={styles.itemName} style={{ fontSize: '0.6rem' }}>{t('forest_score_label').replace('{score}', String(s.score))}</div>
+                      {isReady && <div style={{ fontSize: '0.6rem', color: '#10B981' }}>{t('forest_ready_label')}</div>}
                     </div>
                   )
                 })
             ) : (
-              tiles.length === 0 ? <div style={{ color: '#888', fontSize: '0.8rem' }}>No tiles yet. Come back tomorrow!</div> :
+              tiles.length === 0 ? <div style={{ color: '#888', fontSize: '0.8rem' }}>{t('forest_no_tiles')}</div> :
                 tiles.map(t => (
                   <div key={t.type} className={`${styles.inventoryItem} ${t.count > 0 ? styles.ready : ''}`} onClick={() => startPlanting(t)}>
                     <img src={`/tiles/${t.type}-tile.png`} className={styles.treeIcon} />

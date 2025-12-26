@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { Sparkles, Compass, Lightbulb, TrendingUp, FileText } from 'lucide-react';
 import styles from './CategoryChips.module.css';
+import { useSettings } from '@/lib/store';
 
 const CATEGORIES = [
-  { id: 'learn', label: 'Learn', icon: Lightbulb, color: '#FCD34D' }, // Yellow-ish
-  { id: 'explore', label: 'Explore', icon: Compass, color: '#FCA5A5' }, // Red-ish
-  { id: 'research', label: 'Research', icon: FileText, color: '#93C5FD' }, // Blue-ish
-  { id: 'invest', label: 'Invest', icon: TrendingUp, color: '#6EE7B7' }, // Green-ish
-  { id: 'brief', label: 'Brief', icon: Sparkles, color: '#C4B5FD' }, // Purple-ish
+  { id: 'learn', labelKey: 'chip_learn', icon: Lightbulb, color: '#FCD34D' }, // Yellow-ish
+  { id: 'explore', labelKey: 'chip_explore', icon: Compass, color: '#FCA5A5' }, // Red-ish
+  { id: 'research', labelKey: 'chip_research', icon: FileText, color: '#93C5FD' }, // Blue-ish
+  { id: 'invest', labelKey: 'chip_invest', icon: TrendingUp, color: '#6EE7B7' }, // Green-ish
+  { id: 'brief', labelKey: 'chip_brief', icon: Sparkles, color: '#C4B5FD' }, // Purple-ish
 ];
 
 interface CategoryChipsProps {
@@ -17,6 +18,7 @@ interface CategoryChipsProps {
 }
 
 export default function CategoryChips({ onSelect }: CategoryChipsProps) {
+  const { t } = useSettings();
   const [active, setActive] = useState('learn');
 
   const handleSelect = (id: string) => {
@@ -38,7 +40,7 @@ export default function CategoryChips({ onSelect }: CategoryChipsProps) {
               style={{ backgroundColor: isActive ? cat.color : '#FFFFFF' } as React.CSSProperties}
             >
               <Icon size={18} className={styles.icon} />
-              <span className={styles.label}>{cat.label}</span>
+              <span className={styles.label}>{t(cat.labelKey)}</span>
             </button>
           );
         })}

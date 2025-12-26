@@ -82,7 +82,7 @@ function FeedContent() {
         if (!isInitial) {
           setToast({
             visible: true,
-            message: `${t('generationComplete') || 'Done!'} Scroll down to see: ${newVideos[0].title}`,
+            message: t('generationComplete').replace('{title}', newVideos[0].title),
             duration: 5000
           });
         }
@@ -103,7 +103,7 @@ function FeedContent() {
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, [settings, setLoading, setVideos, setToast, searchParams]);
+  }, [settings, setLoading, setVideos, setToast, searchParams, t]);
 
   // Helper to trigger recursion cleanly without dependency cycle
   const triggerNextRef = React.useRef<(q: string) => void>(() => { });
@@ -123,7 +123,7 @@ function FeedContent() {
             setVideos([target]);
             setLoading(false);
           } else {
-            setToast({ visible: true, message: "Video not found in library" });
+            setToast({ visible: true, message: t('feed_saved_missing') });
             setLoading(false);
           }
         })
@@ -139,7 +139,7 @@ function FeedContent() {
       currentBatchCount.current = 0;
       fetchVideoSequence(initialQuery, true);
     }
-  }, [initialQuery, fetchVideoSequence, loaded, searchParams]);
+  }, [initialQuery, fetchVideoSequence, loaded, searchParams, t]);
 
   // Restart a new batch from a recommendation
   const handleRecommendationSelect = (topic: string) => {
@@ -153,7 +153,7 @@ function FeedContent() {
     return (
       <div className={styles.loadingContainer}>
         <Loader2 className={styles.spinner} size={48} color="#FF6B35" />
-        <p className={styles.loadingText}>Generating your feed...</p>
+        <p className={styles.loadingText}>{t('feed_generating')}</p>
       </div>
     );
   }
@@ -161,7 +161,7 @@ function FeedContent() {
   if (videos.length === 0 && !loading) {
     return (
       <div className={styles.loadingContainer}>
-        <p>No videos found. Search for &quot;Christmas&quot; or &quot;Tech&quot;.</p>
+        <p>{t('feed_empty')}</p>
       </div>
     );
   }
@@ -181,7 +181,7 @@ function FeedContent() {
     const currentVideo = videos[index];
     const contextQuery = currentVideo ? `${currentVideo.title} regarding ${query}` : query;
 
-    setToast({ visible: true, message: `Thinking: ${query}... This may take a moment.`, duration: 0 }); // Persistent
+    setToast({ visible: true, message: t('feed_thinking').replace('{query}', query), duration: 0 }); // Persistent
 
     // Fetch and Insert immediately after current index with context-aware query
     fetchVideoSequence(contextQuery, false, index);
@@ -223,8 +223,10 @@ function FeedContent() {
 }
 
 export default function FeedPage() {
+  const { t } = useSettings();
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>{t('loading')}</div>}>
       <FeedContent />
     </Suspense>
   );

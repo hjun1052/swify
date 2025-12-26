@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, X, Loader2, Sparkles } from 'lucide-react';
 import styles from './CommentDrawer.module.css';
 import { VideoShort } from '@/app/api/generate/route';
+import { useSettings } from '@/lib/store';
 
 interface Message {
   id: string;
@@ -18,12 +19,19 @@ interface CommentDrawerProps {
 }
 
 export default function CommentDrawer({ video, isOpen, onClose }: CommentDrawerProps) {
+  const { t } = useSettings();
+  const baseIntro = t('comment_intro').replace('{title}', video.title);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', type: 'ai', text: `Hi! I'm Swify AI. Ask me anything about "${video.title}"!` }
+    { id: '1', type: 'ai', text: baseIntro }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMessages([{ id: '1', type: 'ai', text: t('comment_intro').replace('{title}', video.title) }]);
+    setInput('');
+  }, [video.id, video.title, t]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -57,7 +65,7 @@ export default function CommentDrawer({ video, isOpen, onClose }: CommentDrawerP
         throw new Error("Failed to get answer");
       }
     } catch {
-      setMessages(prev => [...prev, { id: 'err', type: 'ai', text: "Sorry, I'm having trouble connecting to my brain right now." }]);
+      setMessages(prev => [...prev, { id: 'err', type: 'ai', text: t('comment_error') }]);
     } finally {
       setLoading(false);
     }
@@ -71,9 +79,9 @@ export default function CommentDrawer({ video, isOpen, onClose }: CommentDrawerP
         <header className={styles.header}>
           <div className={styles.titleGroup}>
             <Sparkles size={18} color="#FF6B35" />
-            <h3>Ask Swify AI</h3>
+            <h3>{t('comment_title')}</h3>
           </div>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Close comments">
+          <button className={styles.closeBtn} onClick={onClose} aria-label={t('comment_close_aria')}>
             <X size={24} />
           </button>
         </header>
@@ -96,12 +104,12 @@ export default function CommentDrawer({ video, isOpen, onClose }: CommentDrawerP
         <div className={styles.inputArea}>
           <input
             className={styles.input}
-            placeholder="Ask a question..."
+            placeholder={t('comment_placeholder')}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSend()}
           />
-          <button className={styles.sendBtn} onClick={handleSend} disabled={!input.trim() || loading} aria-label="Send message">
+          <button className={styles.sendBtn} onClick={handleSend} disabled={!input.trim() || loading} aria-label={t('comment_send_aria')}>
             <Send size={20} />
           </button>
         </div>

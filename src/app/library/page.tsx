@@ -180,10 +180,10 @@ export default function LibraryPage() {
       onTouchEnd={handleTouchEnd}
     >
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => router.push('/')} aria-label="Back to Home">
+        <button className={styles.backBtn} onClick={() => router.push('/')} aria-label={t('back')}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className={styles.title}>Your Library</h1>
+        <h1 className={styles.title}>{t('library_title')}</h1>
       </header>
 
       <div className={styles.tabBar}>
